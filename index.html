@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=yes, viewport-fit=cover">
-    <title>Registro de Compras - Mercado Fiado (Data Corrigida)</title>
+    <title>Registro de Compras - Mercado Fiado</title>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css">
     <!-- Biblioteca jsPDF + autoTable -->
     <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
@@ -377,22 +377,6 @@
 
 <script>
     // ---------- FUNÇÕES DE DATA CORRIGIDAS (SEM PROBLEMA DE FUSO) ----------
-    // Converte uma string de data "YYYY-MM-DD" para objeto Date considerando o horário local meio-dia
-    // Isso evita o problema de deslocamento de fuso horário
-    function parseLocalDate(dateString) {
-        if (!dateString) return null;
-        const [year, month, day] = dateString.split('-').map(Number);
-        return new Date(year, month - 1, day, 12, 0, 0); // meio-dia para evitar offset
-    }
-    
-    // Formata data para exibição (dd/mm/yyyy) SEM erro de fuso
-    function formatDisplayDate(dateString) {
-        if (!dateString) return '';
-        const [year, month, day] = dateString.split('-');
-        return `${day}/${month}/${year}`;
-    }
-    
-    // Valida se a string está no formato YYYY-MM-DD
     function isValidDateString(dateString) {
         if (!dateString || !/^\d{4}-\d{2}-\d{2}$/.test(dateString)) return false;
         const [year, month, day] = dateString.split('-').map(Number);
@@ -400,13 +384,18 @@
         return date.getFullYear() === year && date.getMonth() === month - 1 && date.getDate() === day;
     }
     
-    // Obtém a string de data atual no formato YYYY-MM-DZ (considerando horário local)
     function getTodayLocalDateString() {
         const now = new Date();
         const year = now.getFullYear();
         const month = String(now.getMonth() + 1).padStart(2, '0');
         const day = String(now.getDate()).padStart(2, '0');
         return `${year}-${month}-${day}`;
+    }
+    
+    function formatDisplayDate(dateString) {
+        if (!dateString) return '';
+        const [year, month, day] = dateString.split('-');
+        return `${day}/${month}/${year}`;
     }
     
     // ---------- DADOS ----------
@@ -431,7 +420,6 @@
     const clearAllBtn = document.getElementById('clearAllBtn');
     const generatePdfBtn = document.getElementById('generatePdfBtn');
 
-    // helpers
     function formatMoney(value) {
         return value.toLocaleString('pt-BR', { minimumFractionDigits: 2, maximumFractionDigits: 2 });
     }
@@ -451,14 +439,12 @@
                 if (!Array.isArray(purchases)) purchases = []; 
             } catch(e) { purchases = []; }
         } else { purchases = []; }
-        // Validar e limpar datas inválidas
         purchases = purchases.filter(p => p.date && isValidDateString(p.date));
         sortPurchasesByDate();
     }
 
     function sortPurchasesByDate() {
         purchases.sort((a, b) => {
-            // Ordenar pela string YYYY-MM-DD diretamente (ordem alfabética funciona para datas)
             if (a.date > b.date) return -1;
             if (a.date < b.date) return 1;
             return 0;
@@ -474,7 +460,6 @@
         return purchases.filter(p => p.date?.substring(0,7) === activeFilter);
     }
 
-    // Renderização da lista com datas corrigidas
     function renderList() {
         const filtered = getFilteredPurchases();
         const total = filtered.reduce((s, p) => s + p.amount, 0);
@@ -490,7 +475,6 @@
         filtered.forEach(p => {
             const card = document.createElement('div');
             card.className = 'purchase-card';
-            // Usar a função corrigida de formatação
             const formattedDate = formatDisplayDate(p.date);
             const descText = p.description && p.description.trim() !== '' ? p.description : 'Sem descrição';
             card.innerHTML = `
@@ -516,9 +500,7 @@
 
     function escapeHtml(str) { if(!str) return ''; return str.replace(/[&<>]/g, function(m){ return m==='&'?'&amp;':m==='<'?'&lt;':'&gt;';}); }
 
-    // CRUD
     function addPurchase(date, description, amount) {
-        // Validação da data
         if (!isValidDateString(date)) {
             showToast('Data inválida!', 1500);
             return false;
@@ -642,7 +624,7 @@
         } 
     }
 
-    // ---------- PDF PROFISSIONAL (COM DATAS CORRIGIDAS) ----------
+    // ---------- PDF PROFISSIONAL COM PORTUGUÊS CORRETO (SEM EMOJIS QUE CAUSAM ERRO) ----------
     async function generateProfessionalPDF() {
         if(purchases.length === 0) {
             showToast('Nenhuma compra registrada para gerar o relatório.', 2000);
@@ -654,7 +636,6 @@
         
         const primaryColor = [45, 106, 79];
         const secondaryColor = [240, 248, 245];
-        const textDark = [30, 41, 59];
         
         // Título principal
         doc.setFillColor(primaryColor[0], primaryColor[1], primaryColor[2]);
@@ -669,17 +650,17 @@
         
         const today = new Date();
         const dateStr = today.toLocaleDateString('pt-BR', { day: '2-digit', month: 'long', year: 'numeric' });
-        doc.setTextColor(textDark[0], textDark[1], textDark[2]);
+        doc.setTextColor(30, 41, 59);
         doc.setFontSize(9);
         doc.text(`Relatório gerado em: ${dateStr}`, 20, 48);
         
-        let filterDescription = "Todas as compras registradas";
+        let filterDescription = "Período: histórico completo";
         let filteredData = [...purchases];
         if(activeFilter) {
             filteredData = purchases.filter(p => p.date.substring(0,7) === activeFilter);
             const [year, month] = activeFilter.split('-');
             const meses = ['Janeiro','Fevereiro','Março','Abril','Maio','Junho','Julho','Agosto','Setembro','Outubro','Novembro','Dezembro'];
-            filterDescription = `Mês de referência: ${meses[parseInt(month)-1]} de ${year}`;
+            filterDescription = `Período: ${meses[parseInt(month)-1]} de ${year}`;
         } else {
             filterDescription = "Período: histórico completo";
         }
@@ -694,7 +675,7 @@
         });
         const totalGeral = sortedForPdf.reduce((sum, p) => sum + p.amount, 0);
         
-        // Montar tabela com datas formatadas corretamente
+        // Montar tabela
         const tableHeaders = [["Data", "Descrição", "Valor (R$)"]];
         const tableRows = sortedForPdf.map(p => {
             const formattedDate = formatDisplayDate(p.date);
@@ -722,31 +703,36 @@
             }
         });
         
-        const finalY = doc.lastAutoTable.finalY + 6;
-        doc.setFontSize(10);
+        const finalY = doc.lastAutoTable.finalY + 8;
+        
+        // Título do resumo financeiro - SEM EMOJIS para evitar erro de codificação
+        doc.setFontSize(11);
         doc.setFont("helvetica", "bold");
         doc.setTextColor(primaryColor[0], primaryColor[1], primaryColor[2]);
-        doc.text("📊 Resumo Financeiro", 20, finalY);
+        doc.text("RESUMO FINANCEIRO", 20, finalY);
+        
         doc.setFont("helvetica", "normal");
         doc.setFontSize(9);
         doc.setTextColor(60, 70, 85);
-        doc.text(`• Quantidade de compras no período: ${sortedForPdf.length}`, 20, finalY + 6);
-        doc.text(`• Valor médio por compra: R$ ${sortedForPdf.length ? formatMoney(totalGeral / sortedForPdf.length) : "0,00"}`, 20, finalY + 12);
-        doc.text(`• Valor total acumulado: R$ ${formatMoney(totalGeral)}`, 20, finalY + 18);
+        doc.text(`• Quantidade de compras no período: ${sortedForPdf.length}`, 20, finalY + 7);
+        doc.text(`• Valor médio por compra: R$ ${sortedForPdf.length ? formatMoney(totalGeral / sortedForPdf.length) : "0,00"}`, 20, finalY + 13);
+        doc.text(`• Valor total acumulado: R$ ${formatMoney(totalGeral)}`, 20, finalY + 19);
         
+        // Rodapé
+        const pageHeight = doc.internal.pageSize.getHeight();
         doc.setDrawColor(210, 220, 225);
-        doc.line(20, doc.internal.pageSize.getHeight() - 18, 190, doc.internal.pageSize.getHeight() - 18);
+        doc.line(20, pageHeight - 18, 190, pageHeight - 18);
         doc.setFontSize(7);
         doc.setTextColor(150, 160, 175);
-        doc.text("Documento gerado pelo sistema de controle de compras - Mercado Fiado", 20, doc.internal.pageSize.getHeight() - 10);
-        doc.text("Os valores registrados são de inteira responsabilidade do usuário.", 20, doc.internal.pageSize.getHeight() - 5);
+        doc.text("Documento gerado pelo sistema de controle de compras - Mercado Fiado", 20, pageHeight - 10);
+        doc.text("Os valores registrados são de inteira responsabilidade do usuário.", 20, pageHeight - 5);
         
         let fileName = `relatorio_compras`;
         if(activeFilter) fileName += `_${activeFilter}`;
         else fileName += `_completo`;
         fileName += `.pdf`;
         doc.save(fileName);
-        showToast('PDF gerado com sucesso! 📄', 2500);
+        showToast('PDF gerado com sucesso!', 2500);
     }
 
     // Inicialização
