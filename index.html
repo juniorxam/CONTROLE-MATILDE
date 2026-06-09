@@ -1,0 +1,734 @@
+<!DOCTYPE html>
+<html lang="pt-br">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=yes, viewport-fit=cover">
+    <title>Controle de Compras - Mercado Fiado</title>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css">
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+            font-family: system-ui, -apple-system, 'Segoe UI', Roboto, 'Helvetica Neue', sans-serif;
+        }
+
+        body {
+            background: #f1f5f9;
+            padding: 1rem;
+            min-height: 100vh;
+        }
+
+        .container {
+            max-width: 800px;
+            margin: 0 auto;
+            background: white;
+            border-radius: 2rem;
+            box-shadow: 0 10px 25px -5px rgba(0, 0, 0, 0.05), 0 8px 10px -6px rgba(0, 0, 0, 0.02);
+            overflow: hidden;
+            padding: 1.5rem;
+        }
+
+        h1 {
+            font-size: 1.75rem;
+            font-weight: 700;
+            background: linear-gradient(135deg, #2d6a4f, #1b4d3e);
+            -webkit-background-clip: text;
+            background-clip: text;
+            color: transparent;
+            display: inline-flex;
+            align-items: center;
+            gap: 0.5rem;
+        }
+
+        .sub {
+            color: #475569;
+            margin-top: 0.25rem;
+            margin-bottom: 1.5rem;
+            font-size: 0.9rem;
+            border-left: 3px solid #2d6a4f;
+            padding-left: 0.75rem;
+        }
+
+        /* filtro */
+        .filter-section {
+            background: #f8fafc;
+            padding: 0.9rem 1rem;
+            border-radius: 1.5rem;
+            display: flex;
+            flex-wrap: wrap;
+            align-items: center;
+            justify-content: space-between;
+            gap: 0.75rem;
+            margin-bottom: 1.5rem;
+            border: 1px solid #e2e8f0;
+        }
+
+        .filter-group {
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+            flex-wrap: wrap;
+        }
+
+        .filter-group label {
+            font-weight: 500;
+            color: #0f172a;
+        }
+
+        input[type="month"] {
+            padding: 0.5rem 0.75rem;
+            border-radius: 2rem;
+            border: 1px solid #cbd5e1;
+            background: white;
+            font-size: 0.9rem;
+        }
+
+        button {
+            cursor: pointer;
+            border: none;
+            background: none;
+            font-weight: 500;
+            padding: 0.5rem 1rem;
+            border-radius: 2rem;
+            display: inline-flex;
+            align-items: center;
+            gap: 0.5rem;
+            transition: all 0.2s ease;
+            font-size: 0.85rem;
+        }
+
+        .btn-primary {
+            background: #2d6a4f;
+            color: white;
+            box-shadow: 0 1px 2px rgba(0,0,0,0.05);
+        }
+        .btn-primary:hover {
+            background: #1f543e;
+            transform: scale(0.98);
+        }
+        .btn-secondary {
+            background: #e2e8f0;
+            color: #1e293b;
+        }
+        .btn-secondary:hover {
+            background: #cbd5e1;
+        }
+        .btn-danger {
+            background: #fee2e2;
+            color: #b91c1c;
+        }
+        .btn-danger:hover {
+            background: #fecaca;
+        }
+        .btn-info {
+            background: #e0f2fe;
+            color: #0369a1;
+        }
+        .btn-info:hover {
+            background: #bae6fd;
+        }
+
+        /* cartão formulário */
+        .form-card {
+            background: #ffffff;
+            border: 1px solid #e2e8f0;
+            border-radius: 1.5rem;
+            padding: 1.25rem;
+            margin-bottom: 2rem;
+            box-shadow: 0 1px 3px rgba(0,0,0,0.02);
+        }
+        .form-card h2 {
+            font-size: 1.2rem;
+            font-weight: 600;
+            margin-bottom: 1rem;
+            color: #0f172a;
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+        }
+        .form-group {
+            margin-bottom: 1rem;
+        }
+        .form-group label {
+            display: block;
+            font-size: 0.8rem;
+            font-weight: 500;
+            margin-bottom: 0.25rem;
+            color: #334155;
+        }
+        .form-group input, .form-group textarea {
+            width: 100%;
+            padding: 0.75rem;
+            border-radius: 1rem;
+            border: 1px solid #cbd5e1;
+            background: #fefefe;
+            font-size: 1rem;
+        }
+        .form-group input:focus {
+            outline: none;
+            border-color: #2d6a4f;
+            ring: 2px solid #2d6a4f30;
+        }
+        .form-actions {
+            display: flex;
+            gap: 0.75rem;
+            margin-top: 0.5rem;
+        }
+
+        /* lista */
+        .list-header {
+            display: flex;
+            flex-wrap: wrap;
+            justify-content: space-between;
+            align-items: baseline;
+            margin-bottom: 1rem;
+            gap: 0.75rem;
+        }
+        .total-info {
+            background: #e9f5ef;
+            padding: 0.5rem 1rem;
+            border-radius: 2rem;
+            display: flex;
+            gap: 1.2rem;
+            font-size: 0.9rem;
+        }
+        .total-info span {
+            font-weight: 500;
+        }
+        .purchases-list {
+            margin-top: 0.5rem;
+        }
+        #purchasesContainer {
+            display: flex;
+            flex-direction: column;
+            gap: 0.75rem;
+            max-height: 55vh;
+            overflow-y: auto;
+            padding-right: 0.25rem;
+        }
+        .purchase-card {
+            background: white;
+            border: 1px solid #e2e8f0;
+            border-radius: 1.25rem;
+            padding: 0.9rem 1rem;
+            display: flex;
+            flex-wrap: wrap;
+            justify-content: space-between;
+            align-items: center;
+            transition: 0.1s linear;
+            box-shadow: 0 1px 2px rgba(0,0,0,0.02);
+        }
+        .purchase-info {
+            display: flex;
+            flex-direction: column;
+            gap: 0.3rem;
+            flex: 2;
+        }
+        .purchase-date {
+            font-size: 0.7rem;
+            font-weight: 500;
+            color: #2d6a4f;
+            background: #e9f5ef;
+            display: inline-block;
+            width: fit-content;
+            padding: 0.2rem 0.6rem;
+            border-radius: 2rem;
+        }
+        .purchase-desc {
+            font-weight: 500;
+            color: #0f172a;
+        }
+        .purchase-amount {
+            font-size: 1.25rem;
+            font-weight: 700;
+            color: #0f172a;
+        }
+        .purchase-actions {
+            display: flex;
+            gap: 0.5rem;
+            margin-left: 0.5rem;
+        }
+        .edit-btn, .delete-btn {
+            background: transparent;
+            padding: 0.5rem;
+            border-radius: 2rem;
+            font-size: 1rem;
+        }
+        .edit-btn {
+            color: #2c5f8a;
+        }
+        .edit-btn:hover {
+            background: #e0f2fe;
+        }
+        .delete-btn {
+            color: #b91c1c;
+        }
+        .delete-btn:hover {
+            background: #fee2e2;
+        }
+        .empty-message {
+            text-align: center;
+            padding: 2rem;
+            color: #64748b;
+            background: #f8fafc;
+            border-radius: 1.5rem;
+        }
+        .danger-zone {
+            margin-top: 2rem;
+            display: flex;
+            flex-wrap: wrap;
+            justify-content: flex-end;
+            gap: 0.8rem;
+            border-top: 1px solid #e2e8f0;
+            padding-top: 1.5rem;
+        }
+        .toast-msg {
+            position: fixed;
+            bottom: 20px;
+            left: 50%;
+            transform: translateX(-50%);
+            background: #1e293b;
+            color: white;
+            padding: 0.6rem 1.2rem;
+            border-radius: 3rem;
+            font-size: 0.85rem;
+            z-index: 1000;
+            opacity: 0;
+            transition: opacity 0.2s;
+            pointer-events: none;
+        }
+        @media (max-width: 600px) {
+            .container {
+                padding: 1rem;
+            }
+            .purchase-card {
+                flex-direction: column;
+                align-items: flex-start;
+                gap: 0.5rem;
+            }
+            .purchase-actions {
+                align-self: flex-end;
+            }
+            .total-info {
+                font-size: 0.75rem;
+                gap: 0.8rem;
+            }
+        }
+        footer {
+            font-size: 0.7rem;
+            text-align: center;
+            color: #94a3b8;
+            margin-top: 1.5rem;
+        }
+    </style>
+</head>
+<body>
+<div class="container">
+    <h1><i class="fas fa-shopping-basket"></i> Controle Fiado</h1>
+    <div class="sub">Anote cada compra e confira o valor da conta no fim do mês</div>
+
+    <!-- Filtro por mês -->
+    <div class="filter-section">
+        <div class="filter-group">
+            <i class="fas fa-calendar-alt"></i>
+            <label for="monthFilter">Mês:</label>
+            <input type="month" id="monthFilter">
+        </div>
+        <div style="display: flex; gap: 0.5rem;">
+            <button id="applyFilterBtn" class="btn-secondary"><i class="fas fa-filter"></i> Filtrar</button>
+            <button id="clearFilterBtn" class="btn-secondary"><i class="fas fa-eye"></i> Todos</button>
+        </div>
+    </div>
+
+    <!-- Formulário de adicionar / editar -->
+    <div class="form-card">
+        <h2><i class="fas fa-plus-circle"></i> <span id="formTitle">Nova compra</span></h2>
+        <form id="purchaseForm">
+            <div class="form-group">
+                <label for="date">Data *</label>
+                <input type="date" id="date" required>
+            </div>
+            <div class="form-group">
+                <label for="description">Descrição (produto ou observação)</label>
+                <input type="text" id="description" placeholder="Ex: Arroz, carne, feijão..." autocomplete="off">
+            </div>
+            <div class="form-group">
+                <label for="amount">Valor (R$)*</label>
+                <input type="number" id="amount" step="0.01" min="0.01" placeholder="0,00" required>
+            </div>
+            <div class="form-actions">
+                <button type="submit" id="submitBtn" class="btn-primary"><i class="fas fa-save"></i> Adicionar</button>
+                <button type="button" id="cancelEditBtn" class="btn-secondary" style="display: none;"><i class="fas fa-times"></i> Cancelar</button>
+            </div>
+        </form>
+    </div>
+
+    <!-- Lista e resumo -->
+    <div class="purchases-list">
+        <div class="list-header">
+            <h2><i class="fas fa-receipt"></i> Registros</h2>
+            <div class="total-info">
+                <span>💰 Total: <strong id="totalAmount">R$ 0,00</strong></span>
+                <span>📦 Itens: <strong id="totalCount">0</strong></span>
+            </div>
+        </div>
+        <div id="purchasesContainer">
+            <div class="empty-message">Nenhuma compra registrada. Adicione suas compras no formulário acima.</div>
+        </div>
+    </div>
+
+    <!-- Ações extras -->
+    <div class="danger-zone">
+        <button id="exportCSVBtn" class="btn-info"><i class="fas fa-download"></i> Exportar CSV</button>
+        <button id="clearAllBtn" class="btn-danger"><i class="fas fa-trash-alt"></i> Limpar todos os dados</button>
+    </div>
+    <footer>✅ Os dados ficam salvos no seu navegador. Use o filtro por mês para comparar com a conta do mercado.</footer>
+</div>
+<div id="toastMsg" class="toast-msg"></div>
+
+<script>
+    // ----- DADOS -----
+    let purchases = [];           // cada item: { id, date, description, amount }
+    let currentEditId = null;    // id da compra em edição
+    let activeFilter = null;      // string "YYYY-MM" ou null (todos)
+
+    // Elementos DOM
+    const form = document.getElementById('purchaseForm');
+    const dateInput = document.getElementById('date');
+    const descInput = document.getElementById('description');
+    const amountInput = document.getElementById('amount');
+    const submitBtn = document.getElementById('submitBtn');
+    const cancelEditBtn = document.getElementById('cancelEditBtn');
+    const formTitleSpan = document.getElementById('formTitle');
+    const purchasesContainer = document.getElementById('purchasesContainer');
+    const totalAmountSpan = document.getElementById('totalAmount');
+    const totalCountSpan = document.getElementById('totalCount');
+    const monthFilterInput = document.getElementById('monthFilter');
+    const applyFilterBtn = document.getElementById('applyFilterBtn');
+    const clearFilterBtn = document.getElementById('clearFilterBtn');
+    const clearAllBtn = document.getElementById('clearAllBtn');
+    const exportCSVBtn = document.getElementById('exportCSVBtn');
+
+    // helpers
+    function formatMoney(value) {
+        return value.toLocaleString('pt-BR', { minimumFractionDigits: 2, maximumFractionDigits: 2 });
+    }
+
+    function showToast(message, duration = 2200) {
+        const toast = document.getElementById('toastMsg');
+        toast.textContent = message;
+        toast.style.opacity = '1';
+        setTimeout(() => {
+            toast.style.opacity = '0';
+        }, duration);
+    }
+
+    // Carregar dados do localStorage
+    function loadPurchases() {
+        const stored = localStorage.getItem('mercado_fiado');
+        if (stored) {
+            try {
+                purchases = JSON.parse(stored);
+                // garantir que os dados sejam válidos
+                if (!Array.isArray(purchases)) purchases = [];
+            } catch(e) { purchases = []; }
+        } else {
+            purchases = [];
+        }
+        // ordenar por data (mais recentes primeiro)
+        sortPurchasesByDate();
+    }
+
+    function sortPurchasesByDate() {
+        purchases.sort((a, b) => new Date(b.date) - new Date(a.date));
+    }
+
+    function savePurchases() {
+        localStorage.setItem('mercado_fiado', JSON.stringify(purchases));
+    }
+
+    // Filtrar compras conforme activeFilter (YYYY-MM ou null)
+    function getFilteredPurchases() {
+        if (!activeFilter) return [...purchases];
+        return purchases.filter(p => {
+            if (!p.date) return false;
+            const compMonth = p.date.substring(0, 7); // "YYYY-MM"
+            return compMonth === activeFilter;
+        });
+    }
+
+    // Renderizar a lista com base no filtro atual
+    function renderList() {
+        const filtered = getFilteredPurchases();
+        const total = filtered.reduce((sum, p) => sum + p.amount, 0);
+        const count = filtered.length;
+
+        totalAmountSpan.innerText = `R$ ${formatMoney(total)}`;
+        totalCountSpan.innerText = count;
+
+        if (filtered.length === 0) {
+            purchasesContainer.innerHTML = `<div class="empty-message"><i class="fas fa-box-open"></i> Nenhuma compra no período selecionado.<br>Adicione uma compra ou altere o filtro.</div>`;
+            return;
+        }
+
+        // montar cards
+        purchasesContainer.innerHTML = '';
+        filtered.forEach(purchase => {
+            const card = document.createElement('div');
+            card.className = 'purchase-card';
+            const dateObj = new Date(purchase.date);
+            const formattedDate = dateObj.toLocaleDateString('pt-BR');
+            const descriptionText = purchase.description && purchase.description.trim() !== '' ? purchase.description : 'Sem descrição';
+            
+            card.innerHTML = `
+                <div class="purchase-info">
+                    <span class="purchase-date"><i class="far fa-calendar-alt"></i> ${formattedDate}</span>
+                    <div class="purchase-desc"><i class="fas fa-tag"></i> ${escapeHtml(descriptionText)}</div>
+                </div>
+                <div class="purchase-amount">R$ ${formatMoney(purchase.amount)}</div>
+                <div class="purchase-actions">
+                    <button class="edit-btn" data-id="${purchase.id}" title="Editar"><i class="fas fa-pencil-alt"></i></button>
+                    <button class="delete-btn" data-id="${purchase.id}" title="Excluir"><i class="fas fa-trash"></i></button>
+                </div>
+            `;
+            purchasesContainer.appendChild(card);
+        });
+
+        // adicionar eventos para editar/excluir
+        document.querySelectorAll('.edit-btn').forEach(btn => {
+            btn.addEventListener('click', (e) => {
+                const id = parseInt(btn.getAttribute('data-id'));
+                startEditPurchase(id);
+            });
+        });
+        document.querySelectorAll('.delete-btn').forEach(btn => {
+            btn.addEventListener('click', (e) => {
+                const id = parseInt(btn.getAttribute('data-id'));
+                deletePurchaseById(id);
+            });
+        });
+    }
+
+    // escapar HTML básico
+    function escapeHtml(str) {
+        if (!str) return '';
+        return str.replace(/[&<>]/g, function(m) {
+            if (m === '&') return '&amp;';
+            if (m === '<') return '&lt;';
+            if (m === '>') return '&gt;';
+            return m;
+        }).replace(/[\uD800-\uDBFF][\uDC00-\uDFFF]/g, function(c) {
+            return c;
+        });
+    }
+
+    // Adicionar nova compra
+    function addPurchase(date, description, amount) {
+        const newId = Date.now();
+        const newPurchase = {
+            id: newId,
+            date: date,
+            description: description.trim(),
+            amount: amount
+        };
+        purchases.push(newPurchase);
+        sortPurchasesByDate();
+        savePurchases();
+        return newId;
+    }
+
+    // Atualizar compra existente
+    function updatePurchase(id, date, description, amount) {
+        const index = purchases.findIndex(p => p.id === id);
+        if (index !== -1) {
+            purchases[index] = { ...purchases[index], date, description: description.trim(), amount };
+            sortPurchasesByDate();
+            savePurchases();
+            return true;
+        }
+        return false;
+    }
+
+    function deletePurchaseById(id) {
+        if (confirm('Remover esta compra? Essa ação é definitiva.')) {
+            purchases = purchases.filter(p => p.id !== id);
+            savePurchases();
+            // se estava editando exatamente essa compra, cancelar edição
+            if (currentEditId === id) {
+                cancelEdit();
+            }
+            renderList();
+            showToast('Compra removida com sucesso');
+        }
+    }
+
+    // iniciar edição
+    function startEditPurchase(id) {
+        const purchase = purchases.find(p => p.id === id);
+        if (!purchase) return;
+        currentEditId = id;
+        dateInput.value = purchase.date;
+        descInput.value = purchase.description || '';
+        amountInput.value = purchase.amount;
+        submitBtn.innerHTML = '<i class="fas fa-pen"></i> Salvar alterações';
+        formTitleSpan.innerText = 'Editar compra';
+        cancelEditBtn.style.display = 'inline-flex';
+        // rolar suavemente até o formulário
+        document.querySelector('.form-card').scrollIntoView({ behavior: 'smooth', block: 'center' });
+    }
+
+    function cancelEdit() {
+        currentEditId = null;
+        form.reset();
+        // definir data padrão para hoje
+        const today = new Date().toISOString().slice(0,10);
+        dateInput.value = today;
+        descInput.value = '';
+        amountInput.value = '';
+        submitBtn.innerHTML = '<i class="fas fa-save"></i> Adicionar';
+        formTitleSpan.innerText = 'Nova compra';
+        cancelEditBtn.style.display = 'none';
+    }
+
+    // submissão do form
+    function handleFormSubmit(e) {
+        e.preventDefault();
+        let date = dateInput.value;
+        if (!date) {
+            showToast('Selecione a data da compra', 1500);
+            return;
+        }
+        const description = descInput.value || '';
+        let amount = parseFloat(amountInput.value);
+        if (isNaN(amount) || amount <= 0) {
+            showToast('Por favor, insira um valor válido (maior que zero)', 1800);
+            return;
+        }
+        amount = Math.round(amount * 100) / 100;
+
+        if (currentEditId !== null) {
+            // modo edição
+            updatePurchase(currentEditId, date, description, amount);
+            showToast('Compra atualizada com sucesso!');
+            cancelEdit(); // limpa modo edição
+        } else {
+            // modo adição
+            addPurchase(date, description, amount);
+            showToast('Compra adicionada! ✅');
+            form.reset();
+            const today = new Date().toISOString().slice(0,10);
+            dateInput.value = today;
+            descInput.value = '';
+            amountInput.value = '';
+        }
+        // re-renderizar com o mesmo filtro ativo
+        renderList();
+        // pequeno ajuste: se o filtro está ativo e a nova compra não pertence ao mês filtrado, aviso sutil
+        if (activeFilter) {
+            const compMonth = date.substring(0,7);
+            if (compMonth !== activeFilter && currentEditId === null) {
+                showToast(`Compra adicionada em ${compMonth.replace('-','/')} mas o filtro atual é ${activeFilter.replace('-','/')}. Mude o filtro para visualizar.`, 2800);
+            } else if (currentEditId !== null) {
+                const compMonthEdit = date.substring(0,7);
+                if (compMonthEdit !== activeFilter) {
+                    showToast(`Compra editada, mês ${compMonthEdit.replace('-','/')} ≠ filtro ativo. Altere o filtro se necessário.`, 2500);
+                }
+            }
+        }
+    }
+
+    // Aplicar filtro mês
+    function applyMonthFilter() {
+        const monthValue = monthFilterInput.value;
+        if (monthValue && monthValue.length === 7) {
+            activeFilter = monthValue;
+            renderList();
+            showToast(`Filtrando compras de ${activeFilter.replace('-', '/')}`, 1500);
+        } else {
+            // se não selecionou mês, mostra todos
+            activeFilter = null;
+            monthFilterInput.value = '';
+            renderList();
+            showToast('Mostrando todos os registros', 1200);
+        }
+    }
+
+    function clearFilter() {
+        activeFilter = null;
+        monthFilterInput.value = '';
+        renderList();
+        showToast('Filtro removido: exibindo todas as compras', 1400);
+    }
+
+    function clearAllData() {
+        if (confirm('⚠️ ATENÇÃO: Isso apagará TODAS as compras registradas. Não é possível desfazer. Deseja continuar?')) {
+            purchases = [];
+            savePurchases();
+            if (currentEditId !== null) cancelEdit();
+            renderList();
+            showToast('Todos os dados foram removidos', 1800);
+        }
+    }
+
+    function exportToCSV() {
+        if (purchases.length === 0) {
+            showToast('Nenhuma compra para exportar', 1500);
+            return;
+        }
+        // preparar dados ordenados por data crescente (melhor para planilha)
+        const sortedForExport = [...purchases].sort((a,b) => new Date(a.date) - new Date(b.date));
+        const headers = ['ID', 'Data (AAAA-MM-DD)', 'Descrição', 'Valor (R$)'];
+        const rows = sortedForExport.map(p => [
+            p.id,
+            p.date,
+            `"${(p.description || '').replace(/"/g, '""')}"`,
+            p.amount.toFixed(2)
+        ]);
+        const csvContent = [headers, ...rows].map(row => row.join(',')).join('\n');
+        const blob = new Blob(["\uFEFF" + csvContent], { type: 'text/csv;charset=utf-8;' }); // BOM para acentos
+        const link = document.createElement('a');
+        const url = URL.createObjectURL(blob);
+        link.href = url;
+        link.setAttribute('download', 'compras_mercado.csv');
+        document.body.appendChild(link);
+        link.click();
+        document.body.removeChild(link);
+        URL.revokeObjectURL(url);
+        showToast('Exportado como CSV!', 1800);
+    }
+
+    // definir data de hoje no campo
+    function setDefaultDate() {
+        if (!dateInput.value) {
+            const today = new Date().toISOString().slice(0,10);
+            dateInput.value = today;
+        }
+    }
+
+    // Inicializar e sincronizar com localStorage e eventos
+    function init() {
+        loadPurchases();
+        // setar mês atual como padrão de filtro? Deixamos sem filtro inicialmente para mostrar tudo, mas pode ser útil.
+        // O usuário pode aplicar o filtro manualmente. Mais claro.
+        activeFilter = null;
+        monthFilterInput.value = '';
+        setDefaultDate();
+        renderList();
+
+        // Eventos
+        form.addEventListener('submit', handleFormSubmit);
+        cancelEditBtn.addEventListener('click', cancelEdit);
+        applyFilterBtn.addEventListener('click', applyMonthFilter);
+        clearFilterBtn.addEventListener('click', clearFilter);
+        clearAllBtn.addEventListener('click', clearAllData);
+        exportCSVBtn.addEventListener('click', exportToCSV);
+        // opcional: se o usuário teclar Enter nos campos, já submete
+        amountInput.addEventListener('keypress', (e) => { if(e.key === 'Enter') form.dispatchEvent(new Event('submit')); });
+        dateInput.addEventListener('change', () => {});
+    }
+
+    init();
+</script>
+</body>
+</html>
